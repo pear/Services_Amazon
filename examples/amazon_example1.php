@@ -1,11 +1,59 @@
 <?php
+//
+// Example of usage for Services_Amazon
+//
 // * VERY IMPORTANT *
 // YOU NEED TO CHANGE THE DEVELOPERS TOKEN TO SOMETHING OTHER THEN XXXXXXXXXX
 // YOU ALSO SHOULD CHANGE THE ASSOSCIATE ID TO YOUR OWN
 // * VERY IMPORTANT *
+
 require_once 'PEAR.php';
 require_once 'Services/Amazon.php';
 
+// The Developers Token
+$token = 'XXXXXXXXXX';
+// An Associate ID
+$associd = 'xxxxx';
+
+function safestripslashes($value)
+{
+    return get_magic_quotes_gpc() ? stripslashes($value) : $value;
+}
+
+function report_error($msg)
+{
+    echo "<p><i>{$msg}</i><p></body></html>";
+    exit();
+}
+
+// Display previous/next links
+function disp_links($pages, $page)
+{
+    if ($pages > 1) {
+        echo '<tr><td colspan="2">';
+        if ($page > 1) {
+            echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'] .
+                 '?mode=' . urlencode(safestripslashes($_GET['mode'])) .
+                 '&keyword=' . urlencode(safestripslashes($_GET['keyword'])) .
+                 '&page=' . ($page - 1)) .  '">&laquo; Previous Page</a> ';
+        }
+        echo 'Page ' . $page . ' of ' . $pages . ' ';
+        if($page < $pages) {
+            echo '<a href="' . htmlspecialchars($_SERVER['PHP_SELF'] .
+                 '?mode=' . urlencode(safestripslashes($_GET['mode'])) .
+                 '&keyword=' . urlencode(safestripslashes($_GET['keyword'])) .
+                 '&page=' . ($page + 1)) .  '">Next Page &raquo;</a>';
+        }
+        echo '</td></tr>';
+    }
+}
+
+if(Services_Amazon::getApiVersion() != 1) {
+    echo 'This script was written to work with Services_Amazon 1 API';
+    exit();
+}
+
+$php_self = htmlspecialchars($_SERVER['PHP_SELF']);
 echo <<<EOT
 <html>
 <head>
@@ -13,108 +61,84 @@ echo <<<EOT
     <title>Services_Amazon example</title>
 </head>
 <body>
-EOT;
-
-if(substr(Services_Amazon::getApiVersion(), 0, 1) != 1) {
-    echo 'This script was written to work with Services_Amazon 1 API';
-    exit();
-}
-
-$amazon   = &new Services_Amazon('XXXXXXXXXX', 'catdevnull-20');
-$products = null;
-$message  = 'No Results';
-$keyword  = '';
-
-if(isset($_GET['keyword']) && isset($_GET['mode'])) {
-    $mode = $_GET['mode'];
-    if(empty($mode)) {
-        $mode = null;
-    }
-    
-    $page = 1;
-    if(isset($_GET['page'])) {
-        $page = $_GET['page'];
-    }
-    
-    if(empty($_GET['keyword'])) {
-        $message = 'Must search for something.';
-    } else {
-        $keyword  = $_GET['keyword'];
-        $products = $amazon->searchKeyword($keyword, $mode, $page);
-
-        if(PEAR::isError($products)) {
-            $message  = $products->message;
-            $products = null;
-        }
-    }
-}
-
-$modes     = Services_Amazon::getModes();
-$modes[''] = 'All Modes';
-
-echo <<< EOT
-<form action="{$_SERVER['PHP_SELF']}" method="get">
+<form action="{$php_self}" method="get">
 <table border="0">
 <tr>
     <td>
     <select name="mode">
 EOT;
 
-foreach($modes as $mode => $name) {
-    echo '<option value="' . $mode . ($mode == $_GET['mode'] ? '" selected="selected"' : '') . '">' . htmlentities($name) . '</option>';
+$modes = Services_Amazon::getModes();
+// $modes = array('baby' => 'Baby',
+//                'books' => 'Books',
+//                'classical' => 'Classical Music',
+//                ....
+foreach($modes as $k => $v) {
+    echo '<option value="' . $k . ($k == $_GET['mode'] ? '" selected="selected"' : '') . '">' . htmlspecialchars($v) . '</option>';
 }
+echo '</select></td>';
 
+$keyword = htmlspecialchars(safestripslashes($_GET['keyword']));
 echo <<< EOT
-    </select>
-    </td>
-    <td><input type="text" name="keyword" value="$keyword" /></td>
+    <td><input type="text" name="keyword" value="{$keyword}" /></td>
+    <td><input type="hidden" name="page" value="1" /></td>
     <td><input type="submit" value="Search" /></td>
+</tr>
 </table>
 </form>
-
-<table border="0">
 EOT;
 
-if(!is_null($products)) {
-    $pages = $products['pages'];
-    $page  = $products['page'];
-    unset($products['pages']);
-    unset($products['page']);
-    
-    if($pages != 1) {
-        echo '<tr><td colspan="2">';
-        if($page != 1) {
-            if(is_null($mode)) {
-                $mode = '';
-            }
-            echo '<a href="' . $_SERVER['PHP_SELF'] . '?mode=' . $_GET['mode'] . '&keyword=' . $_GET['keyword'] . '&page=' . ($page - 1) .  '">&laquo; Previous Page</a> ';
-        }
-        echo 'Page ' . $page . ' of ' . $pages . '';
-        if($page != $pages) {
-            if(is_null($mode)) {
-                $mode = '';
-            }
-            echo ' <a href="' . $_SERVER['PHP_SELF'] . '?mode=' . $_GET['mode'] . '&keyword=' . $_GET['keyword'] . '&page=' . ($page + 1) .  '">Next Page &raquo;</a>';
-        }
-        echo '</td></tr>';
+if (!$_GET) {
+    echo '</body></html>';
+    exit();
+}
+
+// Validate
+if (empty($_GET['keyword'])) {
+    report_error('Must search for something');
+}
+if (!is_numeric($_GET['page']) || $_GET['page'] < 1) {
+    report_error('Invalid page number');
+}
+if (!isset($modes[$_GET['mode']])) {
+    report_error('Invalid mode');
+}
+
+$amazon = &new Services_Amazon($token, $associd);
+
+$products = $amazon->searchKeyword($_GET['keyword'], $_GET['mode'], $_GET['page']);
+
+if (PEAR::isError($products)) {
+    report_error($products->message);
+}
+
+
+echo '<table border="0">';
+
+$pages = $products['pages'];
+$page  = $products['page'];
+
+disp_links($pages, $page);
+
+// Display products
+for($i = 0; $i < 10; $i++) {
+    if (!isset($products[$i])) break;
+    $product = $products[$i];
+    $creator = '';
+    if(is_array($product['authors'])) {
+        $creator = 'by ' . implode(', ', $product['authors']);
+    } elseif(is_array($product['artists'])) {
+        $creator = 'by ' . implode(', ', $product['artists']);
     }
     
-    foreach($products as $product) {
-        $creator = '';
-        if(is_array($product['authors'])) {
-            $creator = 'by ' . implode(', ', $product['authors']);
-        } elseif(is_array($product['artists'])) {
-            $creator = 'by ' . implode(', ', $product['artists']);        
-        }
-        
-        $price = '';
-        if($product['listprice'] != $product['ourprice']) {
-            $price = '<strike>' . $product['listprice'] . '</strike> ' . $product['ourprice'];
-        } else {
-            $price = $product['listprice'];
-        }
-        
-        echo <<<EOT
+    $price = '';
+    if($product['listprice'] != $product['ourprice']) {
+        $price = '<strike>' . $product['listprice'] . '</strike> ' . $product['ourprice'];
+    } else {
+        $price = $product['listprice'];
+    }
+
+    echo <<<EOT
 <tr>
     <td valign="top"><a href="{$product['url']}"><img src="{$product['imagesmall']}" border="0" alt="" /></a></td>
     <td valign="top">
@@ -127,32 +151,10 @@ if(!is_null($products)) {
     </td>
 </tr>
 EOT;
-    }
-    
-    if($pages != 1) {
-        echo '<tr><td colspan="2">';
-        if($page != 1) {
-            if(is_null($mode)) {
-                $mode = '';
-            }
-            echo '<a href="' . $_SERVER['PHP_SELF'] . '?mode=' . $_GET['mode'] . '&keyword=' . $_GET['keyword'] . '&page=' . ($page - 1) .  '">&laquo; Previous Page</a> ';
-        }
-        echo 'Page ' . $page . ' of ' . $pages . '';
-        if($page != $pages) {
-            if(is_null($mode)) {
-                $mode = '';
-            }
-            echo ' <a href="' . $_SERVER['PHP_SELF'] . '?mode=' . $_GET['mode'] . '&keyword=' . $_GET['keyword'] . '&page=' . ($page + 1) .  '">Next Page &raquo;</a>';
-        }
-        echo '</td></tr>';
-    }
-} else {
-    echo '<tr><td><i>' . $message . '</i></td></tr>';
 }
 
-echo <<< EOT
-</table>
-</body>
-</html>
-EOT;
+disp_links($pages, $page);
+
+echo '</table></body></html>';
+
 ?>
