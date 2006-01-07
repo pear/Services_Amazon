@@ -42,7 +42,7 @@ Services_Amazon:
     <deps>
       <dep type="pkg" rel="has" optional="no">PEAR</dep>
       <dep type="pkg" rel="has" optional="no">HTTP_Request</dep>
-      <dep type="pkg" rel="has" optional="no">XML_Serializer</dep>
+      <dep type="pkg" rel="ge" version="0.17.0" optional="no">XML_Serializer</dep>
       <dep type="pkg" rel="has" optional="yes">Cache</dep>
     </deps>
     <filelist>

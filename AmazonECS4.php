@@ -934,7 +934,9 @@ class Services_AmazonECS4
         }
         $result = $http->getResponseBody();
 
-        $xml = &new XML_Unserializer(array('parseAttributes' => true));
+        $xml = &new XML_Unserializer();
+        $xml->setOption(XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE, true);
+        $xml->setOption(XML_UNSERIALIZER_OPTION_FORCE_ENUM, array('Item', 'Parameter', 'ResponseGroup'));
         $xml->unserialize($result, false);
         $data = $xml->getUnserializedData();
 
