@@ -792,9 +792,9 @@ class Services_Amazon
         // Prepare the data to be sent to _processPage
         $data  = get_object_vars($data);
         $pages = isset($data['TotalPages']) ? (int) $data['TotalPages'] : 1;
-        $totalresults = $data['TotalResults'];
-        unset($data['TotalResults']);
         unset($data['TotalPages']);
+        $totalresults = isset($data['TotalResults']) ? $data['TotalResults'] : count($data);
+        unset($data['TotalResults']);
 
         $products = $this->_processPage($data);
         $products['page']  = $page;
