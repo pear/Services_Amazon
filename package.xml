@@ -30,15 +30,17 @@ Services_Amazon:
     </maintainer>
   </maintainers>
   <release>
-    <version>0.4.0</version>
-    <date>2005-10-18</date>
+    <version>0.5.0</version>
+    <date>2006-05-20</date>
     <license>BSD</license>
     <state>beta</state>
     <notes>
-    Services_AmazonECS4:
-    * Added caching support (Request #5672)
-    Services_Amazon examples:
-    * Fixed PHP_SELF XSS issue</notes>
+    Services_AmazonECS4 (AmazonECS4.php):
+    * Fixed Bug #5821: E_NOTICE in AmazonECS4.php
+    * Fixed Bug #6430: No unified return values (BC Break: Some items always be enumerated.)
+    * Fixed Bug #7235: Deserialize error not caught 
+    Services_Amazon (Amazon.php):
+    * Fixed Bug #6605: reference to NULL element</notes>
     <deps>
       <dep type="pkg" rel="has" optional="no">PEAR</dep>
       <dep type="pkg" rel="has" optional="no">HTTP_Request</dep>
@@ -46,6 +48,7 @@ Services_Amazon:
       <dep type="pkg" rel="has" optional="yes">Cache</dep>
     </deps>
     <filelist>
+      <file role="doc" baseinstalldir="Services" name="examples/config.php"/>
       <file role="doc" baseinstalldir="Services" name="examples/amazon_example1.php"/>
       <file role="doc" baseinstalldir="Services" name="examples/amazon_ecs4_itemsearch.php"/>
       <file role="doc" baseinstalldir="Services" name="examples/amazon_ecs4_cart.php"/>
@@ -59,6 +62,17 @@ Services_Amazon:
     </filelist>
   </release>
   <changelog>
+    <release>
+        <version>0.4.0</version>
+        <date>2005-10-18</date>
+        <license>BSD</license>
+        <state>beta</state>
+        <notes>
+        Services_AmazonECS4:
+        * Added caching support (Request #5672)
+        Services_Amazon examples:
+        * Fixed PHP_SELF XSS issue</notes>
+    </release>
     <release>
         <version>0.3.1</version>
         <date>2005-10-09</date>
