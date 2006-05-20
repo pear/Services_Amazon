@@ -74,15 +74,17 @@ require_once 'XML/Unserializer.php';
 * - Amazon.ca (CA)
 *   http://webservices.amazon.ca/onca/xml?Service=AWSECommerceService
 */
-define('SERVICES_AMAZON_BASEURL', 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService');
-
+if (!defined('SERVICES_AMAZON_BASEURL')) {
+    define('SERVICES_AMAZON_BASEURL', 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService');
+}
 /**
 * A service version
 *
 * Use this to retrieve a particular version of the Amazon ECS.
 */
-define('SERVICES_AMAZON_ECSVERSION', '2005-07-26');
-
+if (!defined('SERVICES_AMAZON_ECSVERSION')) {
+    define('SERVICES_AMAZON_ECSVERSION', '2005-10-05');
+}
 
 /**
 * Class for accessing and retrieving information from Amazon's Web Services
@@ -99,12 +101,12 @@ define('SERVICES_AMAZON_ECSVERSION', '2005-07-26');
 class Services_AmazonECS4
 {
     /**
-    * An Amazon Subscription ID used when quering Amazon servers
+    * An Amazon AccessKey/Subscription ID used when quering Amazon servers
     *
     * @access private
     * @var    string
     */
-    var $_subid = null;
+    var $_keyid = null;
 
     /**
     * An Amazon Associate ID used in the URL's so a commision may be payed
@@ -165,19 +167,27 @@ class Services_AmazonECS4
     var $_cache_expire = 3600;
 
     /**
+    * Errors
+    *
+    * @access private
+    * @var    array
+    */
+    var $_errors = array();
+
+    /**
     * Constructor
     *
     * @access public
-    * @param  string $subid An Amazon Subscription ID used when quering Amazon servers
+    * @param  string $keyid An Amazon Access Key ID used when quering Amazon servers
     * @param  string $associd An Amazon Associate ID used in the URL's so a commision may be payed
-    * @see    setSubscriptionID
+    * @see    setAccessKeyID
     * @see    setAssociateID
     * @see    setBaseUrl
     * @see    setVersion
     */
-    function Services_AmazonECS4($subid, $associd = null)
+    function Services_AmazonECS4($keyid, $associd = null)
     {
-        $this->_subid = $subid;
+        $this->_keyid = $keyid;
         $this->_associd = $associd;
     }
 
@@ -190,11 +200,23 @@ class Services_AmazonECS4
     */
     function getApiVersion()
     {
-        return '0.4';
+        return '@package_version@';
     }
 
     /**
-    * Sets a Subscription ID
+    * Sets an Access Key ID
+    *
+    * @access public
+    * @param  string $subid An Access Key ID
+    * @return void
+    */
+    function setAccessKeyID($keyid)
+    {
+        $this->_keyid = $keyid;
+    }
+
+    /**
+    * Sets a Subscription ID (for backward compatibility)
     *
     * @access public
     * @param  string $subid A Subscription ID
@@ -202,7 +224,7 @@ class Services_AmazonECS4
     */
     function setSubscriptionID($subid)
     {
-        $this->_subid = $subid;
+        $this->_keyid = $subid;
     }
 
     /**
@@ -240,12 +262,14 @@ class Services_AmazonECS4
     */
     function setLocale($locale)
     {
-        $urls = array('US' => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
-                      'UK' => 'http://webservices.amazon.co.uk/onca/xml?Service=AWSECommerceService',
-                      'DE' => 'http://webservices.amazon.de/onca/xml?Service=AWSECommerceService',
-                      'JP' => 'http://webservices.amazon.co.jp/onca/xml?Service=AWSECommerceService',
-                      'FR' => 'http://webservices.amazon.fr/onca/xml?Service=AWSECommerceService',
-                      'CA' => 'http://webservices.amazon.ca/onca/xml?Service=AWSECommerceService');
+        $urls = array(
+            'US' => 'http://webservices.amazon.com/onca/xml?Service=AWSECommerceService',
+            'UK' => 'http://webservices.amazon.co.uk/onca/xml?Service=AWSECommerceService',
+            'DE' => 'http://webservices.amazon.de/onca/xml?Service=AWSECommerceService',
+            'JP' => 'http://webservices.amazon.co.jp/onca/xml?Service=AWSECommerceService',
+            'FR' => 'http://webservices.amazon.fr/onca/xml?Service=AWSECommerceService',
+            'CA' => 'http://webservices.amazon.ca/onca/xml?Service=AWSECommerceService',
+        );
         $locale = strtoupper($locale);
         if (empty($urls[$locale])) {
             return PEAR::raiseError('Invalid locale');
@@ -273,7 +297,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $amazon->setCache('file', array('cache_dir' => 'cache/'));
     * $amazon->setCacheExpire(86400); // 86400 seconds = 24 hours
     * $result = $amazon->BrowseNodeLookup('283155');
@@ -321,7 +345,46 @@ class Services_AmazonECS4
     {
         $this->_cache_expire = $secs;
     }
+
+    /**
+    * Retrieves all error codes and messages
+    *
+    * <code>
+    * if (PEAR::isError($result)) {
+    *     foreach ($amazon->getErrors() as $error) {
+    *         echo $error['Code'];
+    *         echo $error['Message'];
+    *     }
+    * }
+    * </code>
+    *
+    * @access public
+    * @return array All errors
+    */
+    function getErrors()
+    {
+        return $this->_errors;
+    }
     
+    /**
+    * Retrieves the error code and message
+    *
+    * <code>
+    * if (PEAR::isError($result)) {
+    *     $error = $amazon->getError();
+    *     echo $error['Code'];
+    *     echo $error['Message'];
+    * }
+    * </code>
+    *
+    * @access public
+    * @return array All errors
+    */
+    function getError()
+    {
+        return current($this->_errors);
+    }
+
     /**
     * Retrieves the processing time
     *
@@ -350,7 +413,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $result = $amazon->BrowseNodeLookup('283155'); // 283155='Books'
     * ?>
     * </code>
@@ -374,7 +437,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $item = array('ASIN' => 'aaaaaaaaaa', 'Quantity' => 1);
     * // $item = array(array('ASIN' => 'aaaaaaaaaa', 'Quantity' => 1),
     * //               array('OfferListingId' => 'bbbbbbbbbb', 'Quantity' => 10),
@@ -426,7 +489,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $item = array('ASIN' => 'aaaaaaaaaa', 'Quantity' => 1);
     * // $item = array(array('ASIN' => 'aaaaaaaaaa', 'Quantity' => 1),
     * //               array('ASIN' => 'cccccccccc', 'Quantity' => 20));
@@ -473,7 +536,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $item = array('CartItemId' => 'aaaaaaaaaa', 'Quantity' => 1);
     * // $item = array('CartItemId' => 'aaaaaaaaaa', 'Action' => 'SaveForLater');
     * // $item = array(array('CartItemId' => 'aaaaaaaaaa', 'Quantity' => 1),
@@ -540,7 +603,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $result = $amazon->Help('Operation', 'ItemLookup');
     * ?>
     * </code>
@@ -566,7 +629,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $options = array();
     * $options['ResponseGroup'] = 'Large';
     * $result = $amazon->ItemLookup('[ASIN(s)]', $options);
@@ -593,7 +656,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $options = array();
     * $options['Keywords'] = 'sushi';
     * $options['Sort'] = 'salesrank';
@@ -641,7 +704,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $keywords = array('Name' => 'hoge');
     * $result = $amazon->ListSearch('WishList', $keywords);
     * ?>
@@ -688,7 +751,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $keywords = array('Keywords' => 'pizza');
     * $result = $amazon->SellerListingSearch('zShops', $keywords);
     * ?>
@@ -762,7 +825,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $shared = array('SearchIndex' => 'Books',
     *                 'Keywords' => 'php');
     * $params1 = array('ItemPage' => '1');
@@ -778,7 +841,7 @@ class Services_AmazonECS4
     * @param  array $params2 The parameters specific to the second request
     * @return array The array of information returned by the query
     */
-    function doBatch($operation, $shared, $params1, $params2)
+    function doBatch($operation, $shared, $params1 = array(), $params2 = array())
     {
         $params = array();
         $params['Operation'] = $operation;
@@ -800,7 +863,7 @@ class Services_AmazonECS4
     * Example:
     * <code>
     * <?php
-    * $amazon = new Services_AmazonECS4('[your Subscription ID here]');
+    * $amazon = new Services_AmazonECS4('[your Access Key ID here]');
     * $params1 = array('SearchIndex' => 'Books',
     *                  'Title' => 'sushi');
     * $params2 = array('Keywords' => 'tempura');
@@ -883,7 +946,7 @@ class Services_AmazonECS4
     */
     function _generateCacheId($params)
     {
-        unset($params['SubscriptionId']);
+        unset($params['AWSAccessKeyId']);
         unset($params['AssociateTag']);
         $str = '';
         foreach ($params as $k => $v) {
@@ -893,7 +956,7 @@ class Services_AmazonECS4
     }
 
     /**
-    * Sends the request to Amazons Web Services
+    * Sends the request to Amazon
     *
     * @access private
     * @param  array $params The array of request parameters
@@ -901,11 +964,13 @@ class Services_AmazonECS4
     */
     function _sendRequest($params)
     {
-        if (is_null($this->_subid)) {
-            return PEAR::raiseError('Subscription ID have not been set');
+        $this->_errors = array();
+
+        if (is_null($this->_keyid)) {
+            return PEAR::raiseError('Access Key ID have not been set');
         }
 
-        $params['SubscriptionId'] = $this->_subid;
+        $params['AWSAccessKeyId'] = $this->_keyid;
         $params['AssociateTag'] = $this->_associd;
         $params['Version'] = $this->_version;
         $url = $this->_baseurl;
@@ -926,6 +991,7 @@ class Services_AmazonECS4
         }
 
         $http = &new HTTP_Request($url);
+        $http->setHttpVer('1.0');
         $http->addHeader('User-Agent', 'Services_AmazonECS4/' . $this->getApiVersion());
         $http->sendRequest();
 
@@ -936,22 +1002,28 @@ class Services_AmazonECS4
 
         $xml = &new XML_Unserializer();
         $xml->setOption(XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE, true);
-        $xml->setOption(XML_UNSERIALIZER_OPTION_FORCE_ENUM, array('Item', 'Parameter', 'ResponseGroup'));
+        $xml->setOption(XML_UNSERIALIZER_OPTION_FORCE_ENUM,
+                        array('Item', 'Review', 'EditorialReview',
+                              'Parameter', 'Author', 'ResponseGroup', 'Error'));
         $xml->unserialize($result, false);
         $data = $xml->getUnserializedData();
+        if (PEAR::isError($data)) {
+            return $data;
+        }
 
         if (isset($data['Error'])) {
-            $errormsg = $data['Error']['Code'] . ': ' . $data['Error']['Message'];
-            return PEAR::raiseError($errormsg);
+            $this->_errors = $data['Error'];
+            return PEAR::raiseError(implode(':', $this->getError()));
+        }
+
+        if (isset($data['OperationRequest']['RequestProcessingTime'])) {
+            $this->_processing_time = $data['OperationRequest']['RequestProcessingTime'];
         }
 
         if (isset($data['OperationRequest']['Errors'])) {
-            $error = $data['OperationRequest']['Errors']['Error'];
-            $errormsg = $error['Code'] . ': ' . $error['Message'];
-            return PEAR::raiseError($errormsg);
+            $this->_errors = $data['OperationRequest']['Errors']['Error'];
+            return PEAR::raiseError(implode(':', $this->getError()));
         }
-        
-        $this->_processing_time = $data['OperationRequest']['RequestProcessingTime'];
 
         // Get values of the second level content elements
         unset($data['xmlns']);
@@ -960,8 +1032,7 @@ class Services_AmazonECS4
         $keys = array_keys($data);
         foreach ($keys as $v) {
             if (strstr($v, 'Response')) {
-                $key = key($data[$v]);
-                $data[$v] = $data[$v][$key];
+                $data[$v] = current($data[$v]);
                 $contents[$v] = $data[$v];
             } else {
                 $contents = $data[$v];
@@ -988,17 +1059,16 @@ class Services_AmazonECS4
     */
     function _checkContentError($content)
     {
-        if (isset($content['Request']['Errors']['Error'])) {
-            $error = $content['Request']['Errors']['Error'];
-            if (isset($error['Code'])) {
-                $errormsg = $error['Code'] . ':' . $error['Message'];
-            } else {
-                $errormsg = '';
-                foreach ($error as $v) {
-                    $errormsg .= $v['Code'] . ':' . $v['Message'] . "\n";
-                }
+        if (isset($content['Request']['Errors'])) {
+            $this->_errors = $content['Request']['Errors']['Error'];
+            return PEAR::raiseError(implode(':', $this->getError()));
+        } else if (isset($content[0])) {
+            $errors = array();
+            foreach ($content as $v) {
+                $errors = array_merge($errors, $v['Request']['Errors']['Error']);
             }
-            return PEAR::raiseError($errormsg);
+            $this->_errors = $errors;
+            return PEAR::raiseError(implode(':', $this->getError()));
         }
         return true;
     }
