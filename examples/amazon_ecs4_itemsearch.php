@@ -2,18 +2,10 @@
 //
 // Example of usage for Services_AmazonECS4
 //
-// * VERY IMPORTANT *
-// YOU NEED TO CHANGE THE SUBSCRIPTION ID TO SOMETHING OTHER THEN XXXXXXXXXX
-// YOU ALSO SHOULD CHANGE THE ASSOSCIATE ID TO YOUR OWN
-// * VERY IMPORTANT *
 
+require_once 'config.php';
 require_once 'PEAR.php';
 require_once 'Services/AmazonECS4.php';
-
-// An Amazon Subscription ID
-$subid = 'XXXXXXXXXX';
-// An Amazon Associate ID
-$associd = '';
 
 function safestripslashes($value)
 {
@@ -35,8 +27,7 @@ echo <<<EOT
 <body>
 <h1>Services_AmazonECS4 example - ItemSearch Operation</h1>
 <p>
-<a href="http://www.amazon.com/gp/aws/sdk/" target="_blank">Amazon.com Help: Documentation</a><br />
-<a href="http://www.amazon.com/gp/aws/sdk/main.html/?s=AWSEcommerceService&v=2005-07-26&p=ApiReference/ItemSearchOperation" target="_blank">Amazon ECS4.0 API Reference - ItemSearch Operation</a>
+<a href="http://developer.amazonwebservices.com/connect/entry.jspa?externalID=163&categoryID=19" target="_blank">Docs: Amazon E-Commerce Service (API Version 2006-03-08)</a><br />
 </p>
 EOT;
 
@@ -171,7 +162,12 @@ $response_groups = array('Request', 'ItemIds', 'Small', 'Medium', 'Large', 'Offe
                          'ItemAttributes', 'Tracks', 'Accessories', 'EditorialReview',
                          'SalesRank', 'BrowseNodes', 'Images', 'Similarities', 'ListmaniaLists',
                          'SearchBins', 'Subjects');
-$checked_groups = is_array($_GET['ResponseGroup']) ? $_GET['ResponseGroup'] : array($_GET['ResponseGroup']);
+if (isset($_GET['ResponseGroup'])) {
+    $checked_groups = is_array($_GET['ResponseGroup']) ? $_GET['ResponseGroup'] : array($_GET['ResponseGroup']);
+} else {
+    $checked_groups = array();
+}
+
 foreach ($response_groups as $v) {
     echo '<input type="checkbox" name="ResponseGroup[]" value="' . $v . '" ' . (in_array($v, $checked_groups) ? 'checked="checked"' : '') . '/>' . $v . ' ';
 }
@@ -211,7 +207,7 @@ if (!$_GET) {
     exit();
 }
 
-$amazon = new Services_AmazonECS4($subid, $associd);
+$amazon = new Services_AmazonECS4(ACCESS_KEY_ID, ASSOC_ID);
 
 if (isset($_GET['locale'])) {
     $result = $amazon->setLocale($_GET['locale']);
@@ -223,7 +219,9 @@ if (isset($_GET['locale'])) {
 // ItemSearch
 $search_index = $_GET['SearchIndex'];
 $options = array();
-$options['ResponseGroup'] = is_array($_GET['ResponseGroup']) ? implode(',', $_GET['ResponseGroup']) : $_GET['ResponseGroup'];
+if (isset($_GET['ResponseGroup'])) {
+    $options['ResponseGroup'] = is_array($_GET['ResponseGroup']) ? implode(',', $_GET['ResponseGroup']) : $_GET['ResponseGroup'];
+}
 $accepted_options = array('Keywords', 'Title', 'Artist', 'Author', 'Actor', 'Director',
                           'Manufacturer', 'MusicLabel', 'Composer', 'Publisher', 'Brand',
                           'Conductor', 'Orchestra', 'Power', 'BrowseNode', 'AudienceRating',
@@ -247,9 +245,10 @@ if (PEAR::isError($result)) {
     echo '</p>';
 } else {
     echo '<p>Processing Time: ' . $amazon->getProcessingTime() . 'sec</p>';
-    echo '<p>Result:';
+    echo '<p>Result:</p>';
+    echo '<pre>';
     var_dump($result);
-    echo '</p>';
+    echo '</pre>';
 }
 
 echo '</body></html>';

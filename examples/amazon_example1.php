@@ -2,18 +2,10 @@
 //
 // Example of usage for Services_Amazon
 //
-// * VERY IMPORTANT *
-// YOU NEED TO CHANGE THE DEVELOPERS TOKEN TO SOMETHING OTHER THEN XXXXXXXXXX
-// YOU ALSO SHOULD CHANGE THE ASSOSCIATE ID TO YOUR OWN
-// * VERY IMPORTANT *
 
+require_once 'config.php';
 require_once 'PEAR.php';
 require_once 'Services/Amazon.php';
-
-// The Developers Token
-$token = 'XXXXXXXXXX';
-// An Associate ID
-$associd = 'xxxxx';
 
 function safestripslashes($value)
 {
@@ -78,7 +70,7 @@ foreach($modes as $k => $v) {
 }
 echo '</select></td>';
 
-$keyword = htmlspecialchars(safestripslashes($_GET['keyword']));
+$keyword = isset($_GET['keyword']) ? htmlspecialchars(safestripslashes($_GET['keyword'])) : '';
 echo <<< EOT
     <td><input type="text" name="keyword" value="{$keyword}" /></td>
     <td><input type="hidden" name="page" value="1" /></td>
@@ -104,7 +96,7 @@ if (!isset($modes[$_GET['mode']])) {
     report_error('Invalid mode');
 }
 
-$amazon = &new Services_Amazon($token, $associd);
+$amazon = &new Services_Amazon(ACCESS_KEY_ID, ASSOC_ID);
 
 $products = $amazon->searchKeyword($_GET['keyword'], $_GET['mode'], $_GET['page']);
 

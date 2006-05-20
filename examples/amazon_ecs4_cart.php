@@ -9,18 +9,10 @@
 // - CartGet
 // - CartModify
 //
-// * VERY IMPORTANT *
-// YOU NEED TO CHANGE THE SUBSCRIPTION TO SOMETHING OTHER THEN XXXXXXXXXX
-// YOU ALSO SHOULD CHANGE THE ASSOSCIATE ID TO YOUR OWN
-// * VERY IMPORTANT *
 
+require_once 'config.php';
 require_once 'PEAR.php';
 require_once 'Services/AmazonECS4.php';
-
-// An Amazon Subscription ID
-$subid = 'XXXXXXXXXX';
-// An Amazon Associate ID
-$associd = '';
 
 function report_error($msg)
 {
@@ -35,9 +27,11 @@ function existsCart()
 
 $php_self = htmlspecialchars($_SERVER['PHP_SELF']);
 
-$amazon = new Services_AmazonECS4($subid, $associd);
+$amazon = new Services_AmazonECS4(ACCESS_KEY_ID, ASSOC_ID);
 
-switch ($_GET['action']) {
+$action = isset($_GET['action']) ? $_GET['action'] : '';
+
+switch ($action) {
 case 'add':
     $item = array('ASIN' => $_GET['ASIN'],
                   'Quantity' => $_GET['Quantity']);
@@ -103,7 +97,7 @@ echo <<< EOT
 <body>
 <h1>Services_AmazonECS4 example - Cart Operations</h1>
 <p>
-<a href="http://www.amazon.com/gp/aws/sdk/main.html/102-1552053-0536932?s=AWSEcommerceService&v=2005-07-26&p=PgUsingShoppingCartArticle" target="_blank">Using the Amazon E-Commerce Service Shopping Cart</a>
+<a href="http://docs.amazonwebservices.com/AWSEcommerceService/2006-03-08/PgUsingShoppingCartArticle.html" target="_blank">Using the Amazon E-Commerce Service Shopping Cart</a>
 </p>
 <form action="{$php_self}" method="get">
 <table border="0">
@@ -215,9 +209,12 @@ EOT;
 echo '<p>Processing Time : ' . $amazon->getProcessingTime() . 'sec</p>';
 
 // Result
-echo '<p>Result :';
-var_dump($result);
-echo '</p>';
+echo '<p>Result :</p>';
+if (isset($result)) {
+    echo '<pre>';
+    var_dump($result);
+    echo '</pre>';
+}
 
 echo <<< EOT
 </body>
