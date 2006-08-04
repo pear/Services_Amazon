@@ -1065,10 +1065,14 @@ class Services_AmazonECS4
         } else if (isset($content[0])) {
             $errors = array();
             foreach ($content as $v) {
-                $errors = array_merge($errors, $v['Request']['Errors']['Error']);
+                if (isset($v['Request']['Errors']['Error'])) {
+                    $errors = array_merge($errors, $v['Request']['Errors']['Error']);
+                }
             }
-            $this->_errors = $errors;
-            return PEAR::raiseError(implode(':', $this->getError()));
+            if (!empty($errors)) {
+                $this->_errors = $errors;
+                return PEAR::raiseError(implode(':', $this->getError()));
+            }
         }
         return true;
     }
