@@ -30,13 +30,13 @@ Services_Amazon:
     </maintainer>
   </maintainers>
   <release>
-    <version>0.6.0</version>
-    <date>2006-08-04</date>
+    <version>0.7.0</version>
+    <date>2006-11-04</date>
     <license>BSD</license>
     <state>beta</state>
     <notes>
-    Services_AmazonECS4 (AmazonECS4.php):
-    * Fixed Bug #8182: _checkContentError() always returns an error when doBatch() is called</notes>
+    Services_Amazon (Amazon.php):
+    * Fixed Bug #8527: Using locale de, uk, jp and fr does not work</notes>
     <deps>
       <dep type="pkg" rel="has" optional="no">PEAR</dep>
       <dep type="pkg" rel="has" optional="no">HTTP_Request</dep>
@@ -58,6 +58,15 @@ Services_Amazon:
     </filelist>
   </release>
   <changelog>
+    <release>
+      <version>0.6.0</version>
+      <date>2006-08-04</date>
+      <license>BSD</license>
+      <state>beta</state>
+      <notes>
+      Services_AmazonECS4 (AmazonECS4.php):
+      * Fixed Bug #8182: _checkContentError() always returns an error when doBatch() is called</notes>
+    </release>
     <release>
       <version>0.5.0</version>
       <date>2006-05-20</date>
