@@ -1004,7 +1004,7 @@ class Services_AmazonECS4
         $xml->setOption(XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE, true);
         $xml->setOption(XML_UNSERIALIZER_OPTION_FORCE_ENUM,
                         array('Item', 'Review', 'EditorialReview',
-                              'Parameter', 'Author', 'ResponseGroup', 'Error'));
+                              'Parameter', 'Author', 'Creator', 'ResponseGroup', 'Error'));
         $xml->unserialize($result, false);
         $data = $xml->getUnserializedData();
         if (PEAR::isError($data)) {
