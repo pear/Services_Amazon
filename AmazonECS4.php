@@ -646,6 +646,9 @@ class Services_AmazonECS4
     {
         $params = $options;
         $params['Operation'] = 'ItemLookup';
+        if (is_array($item_id)) {
+            $item_id = implode(',', $item_id);
+        }
         $params['ItemId'] = $item_id;
         return $this->_sendRequest($params);
     }
@@ -799,6 +802,9 @@ class Services_AmazonECS4
     {
         $params = $options;
         $params['Operation'] = 'SimilarityLookup';
+        if (is_array($item_id)) {
+            $item_id = implode(',', $item_id);
+        }
         $params['ItemId'] = $item_id;
         return $this->_sendRequest($params);
     }
