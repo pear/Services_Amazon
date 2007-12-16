@@ -128,7 +128,7 @@ class Services_Amazon
         }
         
         $this->_baseurl = $baseurl;
-        $this->_locale  = $this->setLocale($locale);
+        $this->setLocale($locale);
     }
 
     /**
@@ -742,8 +742,8 @@ class Services_Amazon
                     $item['artists'][] = $product->Artists->Artist;
                 }
             }
-            $item['release']      = $product->ReleaseDate;
-            $item['manufacturer'] = $product->Manufacturer;
+            $item['release']      = isset($product->ReleaseDate) ? $product->ReleaseDate : null;
+            $item['manufacturer'] = isset($product->Manufacturer) ? $product->Manufacturer : null;
             $item['imagesmall']   = $product->ImageUrlSmall;
             $item['imagemedium']  = $product->ImageUrlMedium;
             $item['imagelarge']   = $product->ImageUrlLarge;
