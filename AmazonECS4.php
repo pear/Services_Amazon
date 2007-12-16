@@ -149,6 +149,14 @@ class Services_AmazonECS4
     var $_lasturl = null;
 
     /**
+    * The raw result returned from the request
+    *
+    * @access private
+    * @var    string
+    */
+    var $_raw_result = null;
+
+    /**
     * The cache object
     *
     * @access private
@@ -405,6 +413,17 @@ class Services_AmazonECS4
     function getLastUrl()
     {
         return $this->_lasturl;
+    }
+
+    /**
+     * Retrieves the raw result
+     *
+     * @access public
+     * @return string The raw result
+     */
+    function getRawResult()
+    {
+        return $this->_raw_result;
     }
 
     /**
@@ -962,20 +981,14 @@ class Services_AmazonECS4
     }
 
     /**
-    * Sends the request to Amazon
+    * Builds a URL
     *
     * @access private
-    * @param  array $params The array of request parameters
-    * @return array The array of information returned by the query
+    * @param array $params
+    * @return string URL
     */
-    function _sendRequest($params)
+    function _buildUrl($params)
     {
-        $this->_errors = array();
-
-        if (is_null($this->_keyid)) {
-            return PEAR::raiseError('Access Key ID have not been set');
-        }
-
         $params['AWSAccessKeyId'] = $this->_keyid;
         $params['AssociateTag'] = $this->_associd;
         $params['Version'] = $this->_version;
@@ -983,19 +996,18 @@ class Services_AmazonECS4
         foreach ($params as $k => $v) {
             $url .= '&' . $k . '=' . urlencode($v);
         }
-        $this->_lasturl = $url;
+        return $url;
+    }
 
-        // Return cached data if available
-        $cache_id = false;
-        if (isset($this->_cache) && !$this->_ignoreCache($params['Operation'])) {
-            $cache_id = $this->_generateCacheId($params);
-            $cache = $this->_cache->get($cache_id);
-            if (!is_null($cache)) {
-                $this->_processing_time = 0;
-                return $cache;
-            }
-        }
-
+    /**
+    * Sends a request
+    *
+    * @access private
+    * @param string $url
+    * @return string The response
+    */
+    function _sendHttpRequest($url)
+    {
         $http = &new HTTP_Request($url);
         $http->setHttpVer('1.0');
         $http->addHeader('User-Agent', 'Services_AmazonECS4/' . $this->getApiVersion());
@@ -1004,14 +1016,24 @@ class Services_AmazonECS4
         if ($http->getResponseCode() != 200){
             return PEAR::raiseError('Amazon returned invalid HTTP response code ' . $http->getResponseCode());
         }
-        $result = $http->getResponseBody();
+        return $http->getResponseBody();
+    }
 
+    /**
+    * Parses raw XML result
+    *
+    * @access private
+    * @param string $raw_result
+    * @return string The contents
+    */
+    function _parseRawResult($raw_result)
+    {
         $xml = &new XML_Unserializer();
         $xml->setOption(XML_UNSERIALIZER_OPTION_ATTRIBUTES_PARSE, true);
         $xml->setOption(XML_UNSERIALIZER_OPTION_FORCE_ENUM,
                         array('Item', 'Review', 'EditorialReview',
                               'Parameter', 'Author', 'Creator', 'ResponseGroup', 'Error'));
-        $xml->unserialize($result, false);
+        $xml->unserialize($raw_result, false);
         $data = $xml->getUnserializedData();
         if (PEAR::isError($data)) {
             return $data;
@@ -1048,11 +1070,6 @@ class Services_AmazonECS4
                 return $result;
             }
         }
-
-        if ($cache_id) {
-            $this->_cache->save($cache_id, $contents, $this->_cache_expire);
-        }
-
         return $contents;
     }
 
@@ -1062,6 +1079,7 @@ class Services_AmazonECS4
     * @access private
     * @param  array $content Values of the content elements
     * @return array mixed A PEAR_Error on error, a true on success
+    * @see    _parseRawResult
     */
     function _checkContentError($content)
     {
@@ -1082,5 +1100,56 @@ class Services_AmazonECS4
         }
         return true;
     }
+
+    /**
+    * Sends the request to Amazon
+    *
+    * @access private
+    * @param  array $params The array of request parameters
+    * @return array The array of information returned by the query
+    */
+    function _sendRequest($params)
+    {
+        $this->_errors = array();
+
+        if (is_null($this->_keyid)) {
+            return PEAR::raiseError('Access Key ID have not been set');
+        }
+
+        $url = $this->_buildUrl($params);
+        $this->_lasturl = $url;
+        if (PEAR::isError($url)) {
+            return $url;
+        }
+
+        // Return cached data if available
+        $cache_id = false;
+        if (isset($this->_cache) && !$this->_ignoreCache($params['Operation'])) {
+            $cache_id = $this->_generateCacheId($params);
+            $cache = $this->_cache->get($cache_id);
+            if (!is_null($cache)) {
+                $this->_processing_time = 0;
+                return $cache;
+            }
+        }
+
+        $result = $this->_sendHttpRequest($url);
+        $this->_raw_result = $result;
+        if (PEAR::isError($result)) {
+            return $result;
+        }
+
+        $contents = $this->_parseRawResult($result);
+        if (PEAR::isError($contents)) {
+            return $contents;
+        }
+
+        if ($cache_id) {
+            $this->_cache->save($cache_id, $contents, $this->_cache_expire);
+        }
+
+        return $contents;
+    }
+
 }
 ?>
