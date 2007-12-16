@@ -175,6 +175,38 @@ class Services_AmazonECS4
     var $_cache_expire = 3600;
 
     /**
+    * Proxy server
+    *
+    * @access private
+    * @var    string
+    */
+    var $_proxy_host = null;
+
+    /**
+    * Proxy port
+    *
+    * @access private
+    * @var    integer
+    */
+    var $_proxy_port = null;
+
+    /**
+    * Proxy username
+    *
+    * @access private
+    * @var    string
+    */
+    var $_proxy_user = null;
+
+    /**
+    * Proxy password
+    *
+    * @access private
+    * @var    string
+    */
+    var $_proxy_pass = null;
+
+    /**
     * Errors
     *
     * @access private
@@ -352,6 +384,23 @@ class Services_AmazonECS4
     function setCacheExpire($secs)
     {
         $this->_cache_expire = $secs;
+    }
+
+    /**
+    * Sets a proxy
+    *
+    * @access public
+    * @param string $host Proxy host
+    * @param int $port Proxy port
+    * @param string $user Proxy username
+    * @param string $pass Proxy password
+    */
+    function setProxy($host, $port = 8080, $user = null, $pass = null)
+    {
+        $this->_proxy_host = $host;
+        $this->_proxy_port = $port;
+        $this->_proxy_user = $user;
+        $this->_proxy_pass = $pass;
     }
 
     /**
@@ -1011,7 +1060,14 @@ class Services_AmazonECS4
         $http = &new HTTP_Request($url);
         $http->setHttpVer('1.0');
         $http->addHeader('User-Agent', 'Services_AmazonECS4/' . $this->getApiVersion());
-        $http->sendRequest();
+        if ($this->_proxy_host) {
+            $http->setProxy($this->_proxy_host, $this->_proxy_port, $this->_proxy_user, $this->_proxy_pass);
+        }
+
+        $result = $http->sendRequest();
+        if (PEAR::isError($result)) {
+            return PEAR::raiseError('HTTP_Request::sendRequest failed: ' . $result->message);
+        }
 
         if ($http->getResponseCode() != 200){
             return PEAR::raiseError('Amazon returned invalid HTTP response code ' . $http->getResponseCode());
