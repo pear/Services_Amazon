@@ -888,7 +888,7 @@ class Services_AmazonECS4
     function TransactionLookup($transaction_id, $options = array())
     {
         $params = $options;
-        $params['Operation'] = 'SimilarityLookup';
+        $params['Operation'] = 'TransactionLookup';
         $params['TransactionId'] = $transaction_id;
         return $this->_sendRequest($params);
     }
