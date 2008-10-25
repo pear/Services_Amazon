@@ -1,6 +1,11 @@
 --TEST--
 Services_AmazonECS4: req#10687: set array for SimilarityLookup
 --SKIPIF--
+<?php
+if (!file_exists('config-local.php')) {
+    print "Skip Missing config-local.php!";
+}
+?>
 --FILE--
 <?php
 require_once 'config.php';
