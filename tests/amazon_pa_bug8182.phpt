@@ -1,20 +1,20 @@
 --TEST--
-Services_AmazonECS4: bug#8182 
+Services_Amazon: bug#8182 
 --SKIPIF--
 <?php
-if (date('Ymd') >= 20090815) {
-    print "Skip Amazon Associates Web Service 4.0 was deprecated on August 15, 2009";
-}
 if (!file_exists('config-local.php')) {
     print "Skip Missing config-local.php!";
+}
+if (!function_exists('hash_hmac') && !function_exists('mhash')) {
+    print "Skip hash_hmac/mhash is required";
 }
 ?>
 --FILE--
 <?php
 require_once 'config.php';
-require_once 'Services/AmazonECS4.php';
+require_once 'Services/Amazon.php';
 
-$amazon = new Services_AmazonECS4(ACCESS_KEY_ID);
+$amazon = new Services_Amazon(ACCESS_KEY_ID, SECRET_ACCESS_KEY);
 $amazon->setLocale('JP');
 $shared = array('ResponseGroup' => 'BrowseNodeInfo');
 $params1 = array('BrowseNodeId' => '513256');

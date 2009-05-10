@@ -5,36 +5,39 @@ http://pear.php.net/dtd/package-2.0
 http://pear.php.net/dtd/package-2.0.xsd">
  <name>Services_Amazon</name>
  <channel>pear.php.net</channel>
- <summary>Provides access to Amazon&apos;s retail and associate web services</summary>
- <description>Services_AmazonECS4:
-* A class using Amazon E-Commerce Service 4.0
-* Lookup and Search for products, Wishlists, Marketplace, customers, similar item and so on
+ <summary>PHP interface to Amazon Product Advertising API</summary>
+ <description>Services_Amazon:
+* PHP interface to Amazon Product Advertising API
+* All APIs are supported: Lookup and Search for products, Wishlists, Marketplace, carts, customers, similar item and so on
+* Provide an associate tag
+* Multiple locale support: US, UK, DE, JP, FR and CA
+* Caching support
+     
+Services_AmazonECS4:
+* DEPRECATED: After August 15, 2009, all requests will be denied.
+* A class using Amazon Associates Web Service 4.0 (Amazon E-Commerce Service 4.0)
 * Provide associate links
 * Remote cart support
 * Multiple locale support: US, UK, DE, JP, FR and CA
 * Caching support
-
-Services_Amazon:
-* A class using Amazon E-Commerce Service 3.0 (Amazon Web Services 3.0)
-* Search and provide associate links for specific ISBN numbers, authors, artist, directors, and publishers among other things
  </description>
  <lead>
   <name>Tatsuya Tsuruoka</name>
   <user>ttsuruoka</user>
-  <email>ttsuruoka@p4life.jp</email>
+  <email>tatsuya.tsuruoka@gmail.com</email>
   <active>yes</active>
  </lead>
  <lead>
   <name>John Downey</name>
   <user>AZTEK</user>
   <email>jdowney@gmail.com</email>
-  <active>yes</active>
+  <active>no</active>
  </lead>
- <date>2007-12-17</date>
- <time>23:24:33</time>
+ <date>2009-05-10</date>
+ <time>18:22:42</time>
  <version>
-  <release>0.7.1</release>
-  <api>0.7.1</api>
+  <release>0.8.0</release>
+  <api>0.8.0</api>
  </version>
  <stability>
   <release>beta</release>
@@ -42,12 +45,11 @@ Services_Amazon:
  </stability>
  <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
  <notes>Services_Amazon (Amazon.php):
-* Fixed Bug #10804: setLocale() and constructor bug
+* Breaking backward compatibility
+* Product Advertising API support
+* New APIs: TagLookup, VehiclePartLookup, VehiclePartSearch, VehicleSearch
 Services_AmazonECS4 (AmazonECS4.php):
-* Fixed Bug #9529: Problem with Creator elements
-* Implemented Req #5869: Provide access to the raw XML
-* Implemented Req #10687: set array for SimilarityLookup
-* Implemented Req #12677: Proxy support
+* Fixed Bug #13556: Incorrect Operation value for TransactionLookup
  </notes>
  <contents>
   <dir name="/">
@@ -97,6 +99,26 @@ Services_AmazonECS4 (AmazonECS4.php):
  </dependencies>
  <phprelease />
  <changelog>
+  <release>
+   <version>
+    <release>0.7.1</release>
+    <api>0.7.1</api>
+   </version>
+   <stability>
+    <release>beta</release>
+    <api>beta</api>
+   </stability>
+   <date>2007-12-17</date>
+   <license uri="http://www.opensource.org/licenses/bsd-license.php">BSD</license>
+ <notes>Services_Amazon (Amazon.php):
+* Fixed Bug #10804: setLocale() and constructor bug
+Services_AmazonECS4 (AmazonECS4.php):
+* Fixed Bug #9529: Problem with Creator elements
+* Implemented Req #5869: Provide access to the raw XML
+* Implemented Req #10687: set array for SimilarityLookup
+* Implemented Req #12677: Proxy support
+ </notes>
+  </release>
   <release>
    <version>
     <release>0.7.0</release>

@@ -2,6 +2,9 @@
 Services_AmazonECS4: AWS.MissingServiceParameter
 --SKIPIF--
 <?php
+if (date('Ymd') >= 20090815) {
+    print "Skip Amazon Associates Web Service 4.0 was deprecated on August 15, 2009";
+}
 if (!file_exists('config-local.php')) {
     print "Skip Missing config-local.php!";
 }
@@ -30,7 +33,3 @@ if (PEAR::isError($result)) {
 
 ?>
 --EXPECT--
-AWS.MissingServiceParameter
-Your request is missing the Service parameter. Please add  the Service parameter to your request and retry.
-AWS.MissingServiceParameter
-Your request is missing the Service parameter. Please add  the Service parameter to your request and retry.

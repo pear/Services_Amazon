@@ -35,13 +35,20 @@
 * @category  Web Services
 * @package   Services_Amazon
 * @author    John Downey <jdowney@gmail.com>
-* @author    Tatsuya Tsuruoka <ttsuruoka@p4life.jp>
+* @author    Tatsuya Tsuruoka <tatsuya.tsuruoka@gmail.com>
 * @copyright 2004 John Downey
 * @license   http://www.freebsd.org/copyright/freebsd-license.html 2 Clause BSD License
 * @version   CVS: $Id$
 * @link      http://pear.php.net/package/Services_Amazon/
 * @filesource
 */
+
+/**
+ * NOTICE:
+ * This class is for backward compatibility and should be considered obsolete.
+ * After August 15, 2009, all requests without a signature will be denied.
+ * You may as well use Services_Amazon when you create a new application.
+ */
 
 /**
 * Uses PEAR class for error management
@@ -91,7 +98,7 @@ if (!defined('SERVICES_AMAZON_ECSVERSION')) {
 *
 * @package Services_Amazon
 * @author  John Downey <jdowney@gmail.com>
-* @author  Tatsuya Tsuruoka <ttsuruoka@p4life.jp>
+* @author  Tatsuya Tsuruoka <tatsuya.tsuruoka@gmail.com>
 * @access  public
 * @version Release: @package_version@
 * @uses    PEAR

@@ -2,9 +2,7 @@
 Services_Amazon: bug#8527: Using locale de, uk, jp and fr does not work
 --SKIPIF--
 <?php
-if (!file_exists('config-local.php')) {
-    print "Skip Missing config-local.php!";
-}
+print 'Skip ECS 3.0 was shutdown on March 31, 2008';
 ?>
 --FILE--
 <?php

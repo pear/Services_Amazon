@@ -2,6 +2,9 @@
 Services_AmazonECS4: ItemLookup()
 --SKIPIF--
 <?php
+if (date('Ymd') >= 20090815) {
+    print "Skip Amazon Associates Web Service 4.0 was deprecated on August 15, 2009";
+}
 if (!file_exists('config-local.php')) {
     print "Skip Missing config-local.php!";
 }
