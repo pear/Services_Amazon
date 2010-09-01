@@ -237,7 +237,7 @@ $result = $amazon->ItemSearch($search_index, $options);
 $lasturl = $amazon->getLastUrl();
 echo '<p>REST request:<br/>';
 echo '<a href="' . htmlspecialchars($lasturl) . '" target="_blank">' .
-      ereg_replace('&amp;', '<br/>&amp;', htmlspecialchars($lasturl)) . '</a></p>';
+      preg_replace('/&amp;/', '<br/>&amp;', htmlspecialchars($lasturl)) . '</a></p>';
 
 if (PEAR::isError($result)) {
     echo '<p>Error:<br/>';
