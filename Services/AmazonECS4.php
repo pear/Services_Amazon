@@ -38,7 +38,7 @@
 * @author    Tatsuya Tsuruoka <tatsuya.tsuruoka@gmail.com>
 * @copyright 2004 John Downey
 * @license   http://www.freebsd.org/copyright/freebsd-license.html 2 Clause BSD License
-* @version   CVS: $Id$
+* @version   CVS: $Id: AmazonECS4.php 280260 2009-05-10 09:40:30Z ttsuruoka $
 * @link      http://pear.php.net/package/Services_Amazon/
 * @filesource
 */
